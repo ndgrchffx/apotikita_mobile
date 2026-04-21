@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/medicine_provider.dart';
 
-// NAMA CLASS HARUS DashboardScreen, BUKAN AddMedicineScreen!
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -51,9 +50,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               return Card(
                 child: ListTile(
                   leading: const Icon(Icons.medication),
-                  title: Text(medicine.name),
-                  subtitle: Text(medicine.category),
-                  trailing: Text("Rp ${medicine.price}"),
+                  title: Text(medicine['name'] ?? '-'),
+                  subtitle: Text(medicine['category'] ?? '-'),
+                  trailing: Text("Rp ${medicine['price'] ?? 0}"),
                 ),
               );
             },
