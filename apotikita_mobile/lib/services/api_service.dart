@@ -1,0 +1,93 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+class ApiService {
+  static const String baseUrl = 'http://127.0.0.1:8000/api';
+
+  // Simpan token
+  static Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('jwt_token', token);
+  }
+
+  // Ambil token
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('jwt_token');
+  }
+
+  // Hapus token (logout)
+  static Future<void> removeToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('jwt_token');
+  }
+
+  // Header dengan token
+  static Future<Map<String, String>> _authHeaders() async {
+    final token = await getToken();
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+  }
+
+  // --- AUTH ---
+  static Future<bool> login(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'email': email, 'password': password}),
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        await saveToken(data['access_token']);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // --- MEDICINES ---
+  static Future<List<dynamic>> getMedicines() async {
+    final headers = await _authHeaders();
+    final response = await http.get(
+      Uri.parse('$baseUrl/medicines'),
+      headers: headers,
+    );
+    if (response.statusCode == 200) return json.decode(response.body);
+    throw Exception('Gagal ambil data');
+  }
+
+  static Future<bool> addMedicine(Map<String, dynamic> data) async {
+    final headers = await _authHeaders();
+    final response = await http.post(
+      Uri.parse('$baseUrl/medicines'),
+      headers: headers,
+      body: json.encode(data),
+    );
+    return response.statusCode == 201;
+  }
+
+  static Future<bool> updateMedicine(int id, Map<String, dynamic> data) async {
+    final headers = await _authHeaders();
+    final response = await http.put(
+      Uri.parse('$baseUrl/medicines/$id'),
+      headers: headers,
+      body: json.encode(data),
+    );
+    return response.statusCode == 200;
+  }
+
+  static Future<bool> deleteMedicine(int id) async {
+    final headers = await _authHeaders();
+    final response = await http.delete(
+      Uri.parse('$baseUrl/medicines/$id'),
+      headers: headers,
+    );
+    return response.statusCode == 200;
+  }
+}
