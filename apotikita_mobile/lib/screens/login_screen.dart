@@ -11,23 +11,26 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final ApiService _apiService = ApiService();
+  bool _isLoading = false;
 
   void _handleLogin() async {
-    final token = await ApiService.login(
+    setState(() => _isLoading = true);
+
+    final success = await ApiService.login(
       _emailController.text,
       _passwordController.text,
     );
 
-    if (token != null && mounted) {
-      // Pindah ke Dashboard kalau login sukses
+    setState(() => _isLoading = false);
+
+    if (success && mounted) {
       Navigator.pushReplacementNamed(context, '/dashboard');
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Email atau Password Salah"),
-          backgroundColor: Colors.red, // Kasih warna merah biar kelihatan error
-          behavior: SnackBarBehavior.floating, // Biar melayang lebih keren
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -43,15 +46,27 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: "Email"),
+              decoration: const InputDecoration(
+                labelText: "Email",
+                prefixIcon: Icon(Icons.email),
+              ),
             ),
+            const SizedBox(height: 16),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: "Password"),
+              decoration: const InputDecoration(
+                labelText: "Password",
+                prefixIcon: Icon(Icons.lock),
+              ),
               obscureText: true,
             ),
             const SizedBox(height: 20),
-            ElevatedButton(onPressed: _handleLogin, child: const Text("Login")),
+            ElevatedButton(
+              onPressed: _isLoading ? null : _handleLogin,
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text("Login"),
+            ),
           ],
         ),
       ),
