@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'providers/medicine_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/user_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,10 +32,12 @@ class MyApp extends StatelessWidget {
         ),
         fontFamily: 'Roboto',
       ),
-      initialRoute: '/',
+      initialRoute: '/splash',
       routes: {
+        '/splash': (context) => const SplashScreen(),
         '/': (context) => const LoginScreen(),
         '/dashboard': (context) => const DashboardScreen(),
+        '/user': (context) => const UserScreen(),
       },
     );
   }
