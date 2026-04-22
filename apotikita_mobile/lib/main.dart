@@ -3,12 +3,9 @@ import 'package:provider/provider.dart';
 import 'providers/medicine_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
-import 'screens/add_medicine_screen.dart';
 
 void main() {
-  // Biar Flutter pastiin semua widget ke-binding sebelum jalan
   WidgetsFlutterBinding.ensureInitialized();
-
   runApp(
     MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => MedicineProvider())],
@@ -23,46 +20,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Apotikita Mobile',
+      title: 'Apotikita',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blueAccent,
-          primary: Colors.blueAccent,
+          seedColor: const Color(0xFF3B5BDB),
+          primary: const Color(0xFF3B5BDB),
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.blueAccent,
-          foregroundColor: Colors.white,
-          centerTitle: true,
-          elevation: 2,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blueAccent,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 15),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.grey[50],
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.blueAccent),
-          ),
-          prefixIconColor: Colors.blueAccent,
-        ),
+        fontFamily: 'Roboto',
       ),
-      // Navigasi Rute
       initialRoute: '/',
       routes: {
         '/': (context) => const LoginScreen(),
         '/dashboard': (context) => const DashboardScreen(),
-        '/add-medicine': (context) => const AddMedicineScreen(),
       },
     );
   }

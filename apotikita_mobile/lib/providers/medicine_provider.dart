@@ -4,38 +4,83 @@ import '../services/api_service.dart';
 enum MedicineState { idle, loading, error }
 
 class MedicineProvider extends ChangeNotifier {
-  // Ganti jadi dynamic biar fleksibel nerima data dari Laravel lu
   List<dynamic> _medicines = [];
+  List<dynamic> _filtered = [];
   MedicineState _state = MedicineState.idle;
   String _errorMessage = '';
+  String _searchQuery = '';
 
-  List<dynamic> get medicines => _medicines;
+  List<dynamic> get medicines => _filtered;
   MedicineState get state => _state;
   String get errorMessage => _errorMessage;
+  String get searchQuery => _searchQuery;
+
+  int get totalProducts => _medicines.length;
+
+  int get highestPrice {
+    if (_medicines.isEmpty) return 0;
+    return _medicines
+        .map((m) => int.tryParse(m['price'].toString()) ?? 0)
+        .reduce((a, b) => a > b ? a : b);
+  }
+
+  void search(String query) {
+    _searchQuery = query;
+    if (query.isEmpty) {
+      _filtered = List.from(_medicines);
+    } else {
+      _filtered = _medicines.where((m) {
+        final name = m['name'].toString().toLowerCase();
+        final category = m['category'].toString().toLowerCase();
+        return name.contains(query.toLowerCase()) ||
+            category.contains(query.toLowerCase());
+      }).toList();
+    }
+    notifyListeners();
+  }
 
   Future<void> getMedicines() async {
     _state = MedicineState.loading;
     notifyListeners();
     try {
       final data = await ApiService.getMedicines();
-      // Langsung masukin data dari API tanpa di-map ke Model dulu
       _medicines = data;
+      _filtered = List.from(data);
       _state = MedicineState.idle;
     } catch (e) {
       _state = MedicineState.error;
       _errorMessage = e.toString();
-      print("Error ambil data: $e"); // Liat di console error-nya apa
     }
     notifyListeners();
   }
 
-  // Fungsi tambah & hapus tetep sama
   Future<bool> addMedicine(String name, String category, int price) async {
     final success = await ApiService.addMedicine({
       'name': name,
       'category': category,
       'price': price,
     });
+    if (success) await getMedicines();
+    return success;
+  }
+
+  Future<bool> updateMedicine(
+    int id,
+    String name,
+    String category,
+    int price,
+  ) async {
+    final success = await ApiService.updateMedicine(id, {
+      'name': name,
+      'category': category,
+      'price': price,
+    });
+    if (success) await getMedicines();
+    return success;
+  }
+
+  Future<bool> deleteMedicine(int id) async {
+    final success = await ApiService.deleteMedicine(id);
     if (success) await getMedicines();
     return success;
   }

@@ -3,27 +3,24 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://127.0.0.1:8000/api';
+  static const String baseUrl =
+      'https://apotikitamobile-production.up.railway.app/api';
 
-  // Simpan token
   static Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('jwt_token', token);
   }
 
-  // Ambil token
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('jwt_token');
   }
 
-  // Hapus token (logout)
   static Future<void> removeToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('jwt_token');
   }
 
-  // Header dengan token
   static Future<Map<String, String>> _authHeaders() async {
     final token = await getToken();
     return {
@@ -51,6 +48,10 @@ class ApiService {
     }
   }
 
+  static Future<void> logout() async {
+    await removeToken();
+  }
+
   // --- MEDICINES ---
   static Future<List<dynamic>> getMedicines() async {
     final headers = await _authHeaders();
@@ -58,8 +59,14 @@ class ApiService {
       Uri.parse('$baseUrl/medicines'),
       headers: headers,
     );
-    if (response.statusCode == 200) return json.decode(response.body);
-    throw Exception('Gagal ambil data');
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      // Handle both list and object with data key
+      if (data is List) return data;
+      if (data is Map && data['data'] != null) return data['data'];
+      return [];
+    }
+    throw Exception('Gagal mengambil data obat');
   }
 
   static Future<bool> addMedicine(Map<String, dynamic> data) async {
@@ -69,7 +76,7 @@ class ApiService {
       headers: headers,
       body: json.encode(data),
     );
-    return response.statusCode == 201;
+    return response.statusCode == 201 || response.statusCode == 200;
   }
 
   static Future<bool> updateMedicine(int id, Map<String, dynamic> data) async {
