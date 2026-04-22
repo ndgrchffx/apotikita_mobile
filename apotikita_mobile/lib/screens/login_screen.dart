@@ -42,29 +42,26 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   void _handleLogin() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Email dan password tidak boleh kosong!"),
-          backgroundColor: Colors.orange,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
     setState(() => _isLoading = true);
-    final success = await ApiService.login(
+
+    final role = await ApiService.login(
       _emailController.text.trim(),
       _passwordController.text,
     );
+
     setState(() => _isLoading = false);
-    if (success && mounted) {
-      Navigator.pushReplacementNamed(context, '/dashboard');
+
+    if (role != null && mounted) {
+      if (role == 'admin') {
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      } else {
+        Navigator.pushReplacementNamed(context, '/user');
+      }
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Email atau password salah!"),
-          backgroundColor: Colors.redAccent,
+          content: Text("Email atau Password salah!"),
+          backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -280,6 +277,31 @@ class _LoginScreenState extends State<LoginScreen>
                                         ),
                                       ),
                               ),
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Belum punya akun? ',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.6),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () =>
+                                      Navigator.pushNamed(context, '/register'),
+                                  child: const Text(
+                                    'Daftar di sini',
+                                    style: TextStyle(
+                                      color: Color(0xFF74C0FC),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
