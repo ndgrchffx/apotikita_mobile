@@ -43,7 +43,12 @@ class AuthController extends Controller
             return response()->json(['error' => 'Email atau password salah'], 401);
         }
 
-        return $this->respondWithToken($token);
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth()->factory()->getTTL() * 60,
+            'role' => auth()->user()->role,
+        ]);
     }
 
 
