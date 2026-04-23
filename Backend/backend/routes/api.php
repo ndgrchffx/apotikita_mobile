@@ -4,18 +4,22 @@ use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
-// Protected: Login wajib pakai token
+// --- 1. PUBLIK (Taruh paling atas, JANGAN di dalam middleware) ---
+Route::post('auth/register', [AuthController::class, 'register']);
+Route::post('auth/login', [AuthController::class, 'login']);
+
+// --- 2. PROTECTED (Harus pakai Token) ---
 Route::middleware('auth:api')->group(function () {
 
-    // SEMUA BISA: Cuma liat daftar dan detail obat
+    // Semua User (Admin & Biasa) bisa liat obat
     Route::get('medicines', [MedicineController::class, 'index']);
-    Route::get('medicines/{medicine}', [MedicineController::class, 'show']);
+    Route::get('medicines/{id}', [MedicineController::class, 'show']);
 
-    // KHUSUS ADMIN: Tambah, Update, Hapus
+    // --- 3. KHUSUS ADMIN ---
     Route::middleware('role:admin')->group(function () {
         Route::post('medicines', [MedicineController::class, 'store']);
-        Route::put('medicines/{medicine}', [MedicineController::class, 'update']);
-        Route::delete('medicines/{medicine}', [MedicineController::class, 'destroy']);
+        Route::put('medicines/{id}', [MedicineController::class, 'update']);
+        Route::delete('medicines/{id}', [MedicineController::class, 'destroy']);
     });
 
     Route::post('auth/refresh', [AuthController::class, 'refresh']);
