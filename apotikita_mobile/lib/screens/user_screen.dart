@@ -205,82 +205,6 @@ class _UserScreenState extends State<UserScreen> {
     );
   }
 
-  void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.orange, width: 2),
-              ),
-              child: const Icon(
-                Icons.warning_amber_rounded,
-                color: Colors.orange,
-                size: 36,
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Yakin mau Logout?',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Sesi kamu akan berakhir.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF3B5BDB),
-                      side: const BorderSide(color: Color(0xFF3B5BDB)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text('Batal'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await ApiService.logout();
-                      if (mounted) {
-                        Navigator.pop(ctx);
-                        Navigator.pushReplacementNamed(context, '/');
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text('Ya, Keluar!'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -319,9 +243,9 @@ class _UserScreenState extends State<UserScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: _showLogoutDialog,
-            tooltip: 'Logout',
+            icon: const Icon(Icons.person_outline, color: Colors.white),
+            onPressed: () => Navigator.pushNamed(context, '/profile'),
+            tooltip: 'Profil',
           ),
         ],
       ),
@@ -483,7 +407,6 @@ class _UserScreenState extends State<UserScreen> {
               ),
             )
           else
-            // Tampilan awal — obat populer
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -507,47 +430,103 @@ class _UserScreenState extends State<UserScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
+                    GridView.count(
+                      crossAxisCount: 2,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 1.1,
                       children: _popularDrugs.map((drug) {
+                        final Map<String, String> preview = {
+                          'Paracetamol':
+                              'Pereda nyeri & demam ringan hingga sedang.',
+                          'Ibuprofen': 'Anti-inflamasi, pereda nyeri & demam.',
+                          'Amoxicillin': 'Antibiotik untuk infeksi bakteri.',
+                          'Omeprazole': 'Mengurangi asam lambung berlebih.',
+                          'Metformin': 'Mengontrol kadar gula darah tipe 2.',
+                          'Aspirin': 'Pengencer darah & pereda nyeri.',
+                          'Cetirizine': 'Antihistamin untuk alergi.',
+                          'Simvastatin': 'Menurunkan kadar kolesterol darah.',
+                        };
                         return GestureDetector(
                           onTap: () {
                             _searchController.text = drug;
                             _search(drug);
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
+                                  color: Colors.black.withOpacity(0.06),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
                                 ),
                               ],
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Icon(
-                                  Icons.medication_outlined,
-                                  color: Color(0xFF3B5BDB),
-                                  size: 18,
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: const Color(
+                                      0xFF3B5BDB,
+                                    ).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.medication_outlined,
+                                    color: Color(0xFF3B5BDB),
+                                    size: 22,
+                                  ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(height: 10),
                                 Text(
                                   drug,
                                   style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
                                     color: Color(0xFF1a1a2e),
                                   ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  preview[drug] ?? 'Ketuk untuk info lengkap.',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey.shade500,
+                                    height: 1.4,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Lihat detail',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: const Color(
+                                          0xFF3B5BDB,
+                                        ).withOpacity(0.8),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.arrow_forward_ios,
+                                      size: 10,
+                                      color: const Color(
+                                        0xFF3B5BDB,
+                                      ).withOpacity(0.8),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),

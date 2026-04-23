@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/medicine_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,6 +44,19 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   void _handleLogin() async {
+    // Validasi dulu
+    if (_emailController.text.trim().isEmpty ||
+        _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Email dan Password tidak boleh kosong!"),
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return; // Stop di sini, tidak lanjut login
+    }
+
     setState(() => _isLoading = true);
 
     final role = await ApiService.login(
@@ -52,6 +67,10 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() => _isLoading = false);
 
     if (role != null && mounted) {
+      Provider.of<MedicineProvider>(
+        context,
+        listen: false,
+      ).setRole(role.toString());
       if (role == 'admin') {
         Navigator.pushReplacementNamed(context, '/dashboard');
       } else {
@@ -279,29 +298,32 @@ class _LoginScreenState extends State<LoginScreen>
                               ),
                             ),
                             const SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Belum punya akun? ',
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.6),
-                                    fontSize: 13,
+                            Center(
+                              child: GestureDetector(
+                                onTap: () =>
+                                    Navigator.pushNamed(context, '/register'),
+                                child: RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: 'Belum punya akun? ',
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.6),
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                      const TextSpan(
+                                        text: 'Daftar di sini',
+                                        style: TextStyle(
+                                          color: Color(0xFF74C0FC),
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                GestureDetector(
-                                  onTap: () =>
-                                      Navigator.pushNamed(context, '/register'),
-                                  child: const Text(
-                                    'Daftar di sini',
-                                    style: TextStyle(
-                                      color: Color(0xFF74C0FC),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ],
                         ),

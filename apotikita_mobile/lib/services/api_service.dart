@@ -30,7 +30,7 @@ class ApiService {
   }
 
   // --- AUTH ---
-  static Future<bool> login(String email, String password) async {
+  static Future<String?> login(String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/login'),
@@ -40,16 +40,33 @@ class ApiService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         await saveToken(data['access_token']);
-        return true;
+        // Simpan role dan email
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('role', data['role'] ?? 'user');
+        await prefs.setString('user_email', email);
+        return data['role'];
       }
-      return false;
+      return null;
     } catch (e) {
-      return false;
+      return null;
     }
   }
 
+  static Future<String?> getUserEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_email');
+  }
+
+  static Future<String?> getUserRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('role');
+  }
+
   static Future<void> logout() async {
-    await removeToken();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('jwt_token');
+    await prefs.remove('role');
+    await prefs.remove('user_email');
   }
 
   // --- MEDICINES ---

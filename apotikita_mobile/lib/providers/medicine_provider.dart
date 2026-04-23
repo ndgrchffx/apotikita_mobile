@@ -10,6 +10,16 @@ class MedicineProvider extends ChangeNotifier {
   String _errorMessage = '';
   String _searchQuery = '';
 
+  String _role = 'user'; // Default sebagai user
+  String get role => _role;
+
+  void setRole(String newRole) {
+    _role = newRole;
+    notifyListeners();
+  }
+
+  bool get isAdmin => _role == 'admin';
+
   List<dynamic> get medicines => _filtered;
   MedicineState get state => _state;
   String get errorMessage => _errorMessage;
@@ -22,6 +32,19 @@ class MedicineProvider extends ChangeNotifier {
     return _medicines
         .map((m) => int.tryParse(m['price'].toString()) ?? 0)
         .reduce((a, b) => a > b ? a : b);
+  }
+
+  List<dynamic> get topExpensiveMedicines {
+    if (_medicines.isEmpty) return [];
+    List<dynamic> sorted = List.from(_medicines);
+    // Sort dari harga tertinggi ke terendah
+    sorted.sort(
+      (a, b) => (int.tryParse(b['price'].toString()) ?? 0).compareTo(
+        int.tryParse(a['price'].toString()) ?? 0,
+      ),
+    );
+    // Ambil 5 teratas
+    return sorted.take(5).toList();
   }
 
   void search(String query) {

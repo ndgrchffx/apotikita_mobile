@@ -2,16 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class DrugInfoService {
-  // OpenFDA API
   static const String _fdaBaseUrl = 'https://api.fda.gov/drug/label.json';
-  // MyMemory Translate API (gratis, tanpa API key)
   static const String _translateUrl = 'https://api.mymemory.translated.net/get';
 
   // Translate teks dari EN ke ID
   static Future<String> translate(String text) async {
     if (text.isEmpty) return '-';
     try {
-      // Batasi panjang teks karena MyMemory ada limit
       final trimmed = text.length > 400 ? '${text.substring(0, 400)}...' : text;
       final uri = Uri.parse(
         '$_translateUrl?q=${Uri.encodeComponent(trimmed)}&langpair=en|id',
@@ -30,23 +27,24 @@ class DrugInfoService {
   // Ambil info obat dari OpenFDA
   static Future<Map<String, String>?> getDrugInfo(String drugName) async {
     try {
-      final uri = Uri.parse(
-        '$_fdaBaseUrl?search=openfda.brand_name:"$drugName"&limit=1',
+      // Cari pakai generic name dulu (lebih akurat)
+      var uri = Uri.parse(
+        '$_fdaBaseUrl?search=openfda.generic_name:"$drugName"&limit=1',
       );
       var response = await http.get(uri);
 
-      // Kalau tidak ketemu pakai brand name, coba generic name
+      // Kalau tidak ketemu, coba brand name
       if (response.statusCode != 200) {
-        final uri2 = Uri.parse(
-          '$_fdaBaseUrl?search=openfda.generic_name:"$drugName"&limit=1',
+        uri = Uri.parse(
+          '$_fdaBaseUrl?search=openfda.brand_name:"$drugName"&limit=1',
         );
-        response = await http.get(uri2);
+        response = await http.get(uri);
       }
 
       // Kalau masih tidak ketemu, coba search lebih luas
       if (response.statusCode != 200) {
-        final uri3 = Uri.parse('$_fdaBaseUrl?search=$drugName&limit=1');
-        response = await http.get(uri3);
+        uri = Uri.parse('$_fdaBaseUrl?search=$drugName&limit=1');
+        response = await http.get(uri);
       }
 
       if (response.statusCode != 200) return null;
@@ -58,7 +56,6 @@ class DrugInfoService {
       final drug = results[0];
       final openFda = drug['openfda'] ?? {};
 
-      // Ambil field yang dibutuhkan
       String brandName = _getFirst(openFda['brand_name']) ?? drugName;
       String genericName = _getFirst(openFda['generic_name']) ?? '-';
       String manufacturer = _getFirst(openFda['manufacturer_name']) ?? '-';
