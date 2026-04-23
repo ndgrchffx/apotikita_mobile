@@ -9,6 +9,18 @@ class MedicineProvider extends ChangeNotifier {
   MedicineState _state = MedicineState.idle;
   String _errorMessage = '';
   String _searchQuery = '';
+  String _selectedCategory = 'Semua';
+
+  String get selectedCategory => _selectedCategory;
+
+  List<String> get categories {
+    final cats = _medicines
+        .map((m) => m['category'].toString())
+        .toSet()
+        .toList();
+    cats.insert(0, 'Semua');
+    return cats;
+  }
 
   String _role = 'user'; // Default sebagai user
   String get role => _role;
@@ -62,6 +74,27 @@ class MedicineProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // filter by category
+  void filterByCategory(String category) {
+    _selectedCategory = category;
+    List<dynamic> base = category == 'Semua'
+        ? List.from(_medicines)
+        : _medicines
+              .where((m) => m['category'].toString() == category)
+              .toList();
+    if (_searchQuery.isNotEmpty) {
+      base = base.where((m) {
+        final name = m['name'].toString().toLowerCase();
+        final cat = m['category'].toString().toLowerCase();
+        return name.contains(_searchQuery.toLowerCase()) ||
+            cat.contains(_searchQuery.toLowerCase());
+      }).toList();
+    }
+    _filtered = base;
+    notifyListeners();
+  }
+
+  // get medicines
   Future<void> getMedicines() async {
     _state = MedicineState.loading;
     notifyListeners();
