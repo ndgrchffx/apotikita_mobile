@@ -56,7 +56,7 @@ class _UserScreenState extends State<UserScreen> {
   void _showDetail(Map<String, String> drug) {
     showDialog(
       context: context,
-      builder: (_) => Dialog(
+      builder: (dialogContext) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Container(
           width: 500,
@@ -102,7 +102,7 @@ class _UserScreenState extends State<UserScreen> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(dialogContext),
                       icon: const Icon(Icons.close, color: Colors.white),
                     ),
                   ],
@@ -212,6 +212,19 @@ class _UserScreenState extends State<UserScreen> {
       appBar: AppBar(
         elevation: 0,
         automaticallyImplyLeading: false,
+        leading: _hasSearched
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () {
+                  setState(() {
+                    _hasSearched = false;
+                    _results = [];
+                    _searchController.clear();
+                    _searchQuery = '';
+                  });
+                },
+              )
+            : null,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
