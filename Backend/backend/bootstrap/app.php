@@ -19,7 +19,13 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Membuka izin untuk Next.js (CORS)
         $middleware->statefulApi();
+
+        // --- TAMBAHKAN INI UNTUK DAFTARIN MIDDLEWARE ROLE ---
+        $middleware->alias([
+            'role' => \App\Http\Middleware\CheckRole::class,
+        ]);
     })
+
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->shouldRenderJsonWhen(function ($request, $e) {
             if ($request->is('api/*')) {
